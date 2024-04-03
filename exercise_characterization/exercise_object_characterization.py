@@ -7,29 +7,33 @@ import matplotlib.pyplot as plt
 # USER INPUTS - CHOOSE VALUES
 ###############################################################################
 
-def ramp_motion_input_parameters():
-    
+def ramp_motion_input_parameters(ramp_incline=40., shape='sphere', material='aluminium', drag_flag=True):
+    """Args:
+    ramp_incline: float, incline angle of the ramp in degrees (30,40)
+    shape: string, shape of the object (sphere, cylinder_slide, cylinder_roll, box, wedge)
+    material: string, material of the object (wood, steel, aluminium)
+    drag_flag: boolean, flag to include drag force (True) or not (False)"""
     # Initialize output
     params = {}
     
     # Choose the ramp incline angle
-    params['ramp_incline'] = 40.        # deg
+    params['ramp_incline'] = ramp_incline        # deg
     
     # Choose an object shape (all options included)
     # Note that the cylinder can either slide or roll so 2 choices are listed
-    params['shape'] = 'sphere'
+    params['shape'] = shape
     # params['shape'] = 'cylinder_slide'
     # params['shape'] = 'cylinder_roll'
     # params['shape'] = 'box'
     # params['shape'] = 'wedge'
     
     # Choose a material to select mu and rho (all options included)
-    params['material'] = 'aluminium'
+    params['material'] = material
     # params['material'] = 'wood'
     # params['material'] = 'steel'
     
     # Choose whether to include drag force (True) or not (False)
-    params['drag_flag'] = True
+    params['drag_flag'] = drag_flag
     # params['drag_flag'] = False
     
     # Dimensions
@@ -64,9 +68,9 @@ def ramp_motion_input_parameters():
         
     else:
         
-        print('Error: invalid shape provided! Must choose from the options: '
-              'sphere, cylinder_slide, cylinder_roll, box, wedge')
-        print('Current selection: ', params['shape'])
+        #print('Error: invalid shape provided! Must choose from the options: '
+        #      'sphere, cylinder_slide, cylinder_roll, box, wedge')
+        #print('Current selection: ', params['shape'])
         return
     
 
@@ -79,10 +83,15 @@ def ramp_motion_input_parameters():
 ###############################################################################
 
 
-def compute_ramp_time():
-    
+def compute_ramp_time(ramp_incline=40., shape='sphere', material='aluminium', drag_flag=True):
+    """Args:
+    ramp_incline: float, incline angle of the ramp in degrees (30,40)
+    shape: string, shape of the object (sphere, cylinder_slide, cylinder_roll, box, wedge)
+    material: string, material of the object (wood, steel, aluminium)
+    drag_flag: boolean, flag to include drag force (True) or not (False)"""
+
     # Retrieve user-defined parameters
-    params = ramp_motion_input_parameters()
+    params = ramp_motion_input_parameters(ramp_incline, shape, material, drag_flag)
     
     # Basic physics
     params['rho_air'] = 1.225e-6    # kg/cm^3
@@ -197,17 +206,17 @@ def compute_ramp_time():
         ramp_incline = params['ramp_incline']*np.pi/180.
         criteria = (1./(1. + (mass*radius**2.)/J))*np.tan(ramp_incline)
         
-        print('mu', mu)
-        print('no-slip criteria', criteria)
+        #print('mu', mu)
+        #print('no-slip criteria', criteria)
         
         if mu < criteria:
             
             print('Error: no-slip condition not met for rolling case')
             print('mu', mu, ' should be greater than ', criteria)
             
-        else:
+        #else:
             
-            print('Good! no-slip condition is met')
+        #    print('Good! no-slip condition is met')
         
         
         
@@ -341,7 +350,15 @@ def rk4(intfcn, tin, y0, params):
 
 if __name__ == '__main__':
     
-    t = compute_ramp_time()
+    shapes = ['sphere', 'cylinder_slide', 'cylinder_roll', 'box', 'wedge']
+    materials = ['wood', 'steel', 'aluminium']
     
-    print('\nTime to reach bottom of ramp [sec]: {:0.4f}'.format(t))
+    for s in shapes:
+        for m in materials:
+            t = compute_ramp_time(ramp_incline=30., shape=s, material=m, drag_flag=True)
+            print(f'For shape {s} and material {m}, time to reach bottom of ramp is {t:.2f} seconds')
 
+    # 30 No drag - sphere (wood, steel, aluminium), cylinder roll (wood, steel, aluminium)
+    # 40 No drag - cylinder_slide (wood), box (wood), wedge (wood)
+    # 30 drag - cylinder_slide (wood), box (wood), wedge (wood)
+    # 40 drag - cylinder_slide (wood, steel), cylinder_roll (wood, steel, aluminium), box (wood, steel), wedge (wood, steel)
